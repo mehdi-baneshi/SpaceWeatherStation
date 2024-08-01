@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace SpaceWeatherStation.Tests.Integration.WeatherForecastController
 {
-    public class WeatherForecastControllerTest7 : IClassFixture<WeatherStationApiFactory>
+    public class WeatherForecastControllerTest7 : IClassFixture<WeatherStationApiWithQuartzFactory>
     {
         private readonly HttpClient _httpClient;
-        private readonly WeatherStationApiFactory _webAppFactory;
+        private readonly WeatherStationApiWithQuartzFactory _webAppFactory;
 
-        public WeatherForecastControllerTest7(WeatherStationApiFactory webAppFactory)
+        public WeatherForecastControllerTest7(WeatherStationApiWithQuartzFactory webAppFactory)
         {
             _webAppFactory = webAppFactory;
             _httpClient = webAppFactory.CreateClient();
@@ -25,7 +25,7 @@ namespace SpaceWeatherStation.Tests.Integration.WeatherForecastController
             var dbcontainer = _webAppFactory.GetDBContainer();
             server.SetUpWorkingThenDownApi();
             await dbcontainer.StopAsync();
-            await Task.Delay(70000);
+            await Task.Delay(15000);
 
             //Act
             var watch = System.Diagnostics.Stopwatch.StartNew();

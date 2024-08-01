@@ -25,7 +25,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace SpaceWeatherStation.Tests.Integration
 {
-    public class WeatherStationApiFactory:WebApplicationFactory<IApiMarker>, IAsyncLifetime
+    public class WeatherStationApiWithQuartzFactory : WebApplicationFactory<IApiMarker>, IAsyncLifetime
     {
 
         private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder().Build();
@@ -52,6 +52,22 @@ namespace SpaceWeatherStation.Tests.Integration
                     services.Remove(service);
                 }
                 services.RemoveAll(typeof(IHostedService));
+
+
+                services.AddQuartz(q =>
+                {
+                    string key = Guid.NewGuid().ToString();
+                    q.AddJob<CacheWeatherDataJob>(opts => opts.WithIdentity(key));
+                    q.AddTrigger(opts => opts
+                        .ForJob(key)
+                        .StartAt(DateBuilder.FutureDate(10, IntervalUnit.Second))
+                        .WithIdentity($"{key}Trigger")
+                        .WithSimpleSchedule(x => x
+                            .WithInterval(TimeSpan.FromSeconds(10))
+                            .RepeatForever()));
+                });
+                services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
+
 
                 services.RemoveAll(typeof(IDbConnectionFactory));
                 services.AddSingleton<IDbConnectionFactory>(_ =>

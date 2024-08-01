@@ -57,7 +57,6 @@ namespace SpaceWeatherStation.Tests.Integration
                 .InScenario("TransientFault")
                 .WillSetStateTo("TransientFault Working")
                 .RespondWith(Response.Create()
-                    .WithDelay(1000)
                     .WithStatusCode(500));
 
             _server.Given(Request.Create()
