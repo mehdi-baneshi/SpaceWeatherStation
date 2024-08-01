@@ -41,8 +41,8 @@ namespace SpaceWeatherStation
                 q.AddJob<CacheWeatherDataJob>(opts => opts.WithIdentity("CacheJob"));
                 q.AddTrigger(opts => opts
                     .ForJob("CacheJob")
-                    .StartNow()
-                    //.StartAt(DateBuilder.FutureDate(1, IntervalUnit.Minute))
+                    //.StartNow()
+                    .StartAt(DateBuilder.FutureDate(1, IntervalUnit.Minute))
                     .WithIdentity("CacheJobTrigger")
                     .WithSimpleSchedule(x => x
                         .WithInterval(TimeSpan.FromMinutes(60))

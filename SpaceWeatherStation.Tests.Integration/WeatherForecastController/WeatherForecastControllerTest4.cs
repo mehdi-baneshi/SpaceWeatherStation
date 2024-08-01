@@ -1,33 +1,28 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using SpaceWeatherStation.Marker;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceWeatherStation.Tests.Integration.WeatherForecastController
 {
-    public class WeatherForecastControllerTest1:IClassFixture<WeatherStationApiFactory>
+    public class WeatherForecastControllerTest4 : IClassFixture<WeatherStationApiFactory>
     {
         private readonly HttpClient _httpClient;
         private readonly WeatherStationApiFactory _webAppFactory;
 
-        public WeatherForecastControllerTest1(WeatherStationApiFactory webAppFactory)
+        public WeatherForecastControllerTest4(WeatherStationApiFactory webAppFactory)
         {
             _webAppFactory = webAppFactory;
             _httpClient = webAppFactory.CreateClient();
         }
 
-
         [Fact]
-        public async Task GetLastForecastData_ReturnsValidWeatherData_WhenApiUp()
+        public async Task GetLastForecastData_ReturnsValidWeatherData_WhenApiHasTrainsientFault()
         {
             //Arange
             var server = _webAppFactory.GetApiServer();
-            var container= _webAppFactory.GetDBContainer();
-            server.SetupWorkingApi();
+            server.SetUpTransientFaultApi();
 
             //Act
             var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -39,7 +34,7 @@ namespace SpaceWeatherStation.Tests.Integration.WeatherForecastController
             //Asert
             Assert.True((int)response.StatusCode == 200);
             Assert.False(string.IsNullOrEmpty(responseBody));
-            Assert.True(elapsedMs<1000);
+            Assert.True(server.GetServer().LogEntries.Count()==2);
         }
     }
 }

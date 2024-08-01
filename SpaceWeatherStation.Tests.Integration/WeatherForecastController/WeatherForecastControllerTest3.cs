@@ -22,21 +22,20 @@ namespace SpaceWeatherStation.Tests.Integration.WeatherForecastController
         {
             //Arange
             var server = _webAppFactory.GetApiServer();
-            var container = _webAppFactory.GetDBContainer();
-            server.SetupWorkingApi();
+            server.SetUpWorkingThenDownApi();
             await _httpClient.GetAsync("api/Forecast/GetLastForecastData");
-            server.Dispose();
-            var newserver = new OpenMeteoFakeAPIServer();
-            newserver.Start();
-            newserver.SetupDownApi();
 
             //Act
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             var response = await _httpClient.GetAsync("api/Forecast/GetLastForecastData");
+            watch.Stop();
             var responseBody = await response.Content.ReadAsStringAsync();
+            var elapsedMs = watch.ElapsedMilliseconds;
 
             //Asert
-            Assert.True((int)response.StatusCode >= 200 && (int)response.StatusCode <= 204);
+            Assert.True((int)response.StatusCode == 200);
             Assert.False(string.IsNullOrEmpty(responseBody));
+            Assert.True(elapsedMs>3000 && elapsedMs<4000);
         }
     }
 }

@@ -8,18 +8,18 @@ namespace SpaceWeatherStation.BackgroundJobs
     [DisallowConcurrentExecution]
     public class CacheWeatherDataJob : IJob
     {
-        private readonly IApplicationDataService _applicationDataService;
+        private readonly IExternalDataService _externalDataService;
         private readonly ICacheManager _cacheManager;
 
-        public CacheWeatherDataJob(IApplicationDataService applicationDataService, ICacheManager cacheManager)
+        public CacheWeatherDataJob(IExternalDataService externalDataService, ICacheManager cacheManager)
         {
-            _applicationDataService = applicationDataService;
+            _externalDataService = externalDataService;
             _cacheManager = cacheManager;
         }
 
         public async Task Execute(IJobExecutionContext context)
         {
-            var data = await _applicationDataService.GetLastWeatherDataFromDatabase();
+            var data = await _externalDataService.GetForecastDataFromWebService();
             if (data is not null)
             {
                 await _cacheManager.RemoveCacheAsync("LastWeatherData");

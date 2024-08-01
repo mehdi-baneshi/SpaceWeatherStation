@@ -29,12 +29,15 @@ namespace SpaceWeatherStation.Tests.Integration.WeatherForecastController
 
             //Act
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            var response = await _httpClient.GetAsync("api/Forecast/GetLastForecastData");
+            var response = await _httpClient.GetAsync("api/Forecast/GetLastForecastData"); 
+            watch.Stop();
             var responseBody = await response.Content.ReadAsStringAsync();
+            var elapsedMs = watch.ElapsedMilliseconds;
 
             //Asert
             Assert.True((int)response.StatusCode == 204);
             Assert.True(string.IsNullOrEmpty(responseBody));
+            Assert.True(elapsedMs>3000 && elapsedMs<4000);
         }
     }
 }

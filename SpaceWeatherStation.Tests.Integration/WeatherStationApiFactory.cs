@@ -17,6 +17,7 @@ using Xunit;
 using SpaceWeatherStation.Interfaces;
 using SpaceWeatherStation.Database;
 using Testcontainers.MsSql;
+using Microsoft.Data.SqlClient;
 
 namespace SpaceWeatherStation.Tests.Integration
 {
@@ -33,7 +34,7 @@ namespace SpaceWeatherStation.Tests.Integration
             {
                 services.RemoveAll(typeof(IDbConnectionFactory));
                 services.AddSingleton<IDbConnectionFactory>(_ =>
-                    new DbConnectionFactory(_msSqlContainer.GetConnectionString(), _msSqlContainer.GetConnectionString()));
+                    new DbConnectionFactory(ApplyConnectionTimeout(_msSqlContainer.GetConnectionString()), _msSqlContainer.GetConnectionString()));
 
                 services.AddHttpClient("OpenMeteoAPI", client =>
                 {
@@ -64,6 +65,14 @@ namespace SpaceWeatherStation.Tests.Integration
         {
             await _msSqlContainer.DisposeAsync();
             _openMeteoFakeAPIServer.Dispose();
+        }
+
+        private string ApplyConnectionTimeout(string connectionString)
+        {
+            var builder = new SqlConnectionStringBuilder(connectionString);
+            builder.ConnectTimeout = 1;
+
+            return builder.ConnectionString;
         }
     }
 }

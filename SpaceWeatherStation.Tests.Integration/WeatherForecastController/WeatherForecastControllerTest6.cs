@@ -1,33 +1,31 @@
-﻿using Microsoft.AspNetCore.Mvc.Testing;
-using SpaceWeatherStation.Marker;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace SpaceWeatherStation.Tests.Integration.WeatherForecastController
 {
-    public class WeatherForecastControllerTest1:IClassFixture<WeatherStationApiFactory>
+    public class WeatherForecastControllerTest6 : IClassFixture<WeatherStationApiFactory>
     {
         private readonly HttpClient _httpClient;
         private readonly WeatherStationApiFactory _webAppFactory;
 
-        public WeatherForecastControllerTest1(WeatherStationApiFactory webAppFactory)
+        public WeatherForecastControllerTest6(WeatherStationApiFactory webAppFactory)
         {
             _webAppFactory = webAppFactory;
             _httpClient = webAppFactory.CreateClient();
         }
 
-
         [Fact]
-        public async Task GetLastForecastData_ReturnsValidWeatherData_WhenApiUp()
+        public async Task GetLastForecastData_ReturnsImmediateValidWeatherData_WhenApiDownDbUPAndCircuitBreakerOpen()
         {
             //Arange
             var server = _webAppFactory.GetApiServer();
-            var container= _webAppFactory.GetDBContainer();
-            server.SetupWorkingApi();
+            server.SetUpWorkingThenDownApi();
+            await _httpClient.GetAsync("api/Forecast/GetLastForecastData"); //api runs and record is saved in db
+            await _httpClient.GetAsync("api/Forecast/GetLastForecastData"); //api is down
+            await _httpClient.GetAsync("api/Forecast/GetLastForecastData"); //api is down and circuit breaker opens
 
             //Act
             var watch = System.Diagnostics.Stopwatch.StartNew();
@@ -39,7 +37,7 @@ namespace SpaceWeatherStation.Tests.Integration.WeatherForecastController
             //Asert
             Assert.True((int)response.StatusCode == 200);
             Assert.False(string.IsNullOrEmpty(responseBody));
-            Assert.True(elapsedMs<1000);
+            Assert.True(elapsedMs < 500);
         }
     }
 }
